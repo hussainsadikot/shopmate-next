@@ -1,5 +1,6 @@
 import Image from "next/image"; // Next.js માં ઈમેજ માટે આ ખાસ ટૂલ વપરાય છે
 import Link from "next/link";
+import AddToCartBtn from "./AddToCartBtn"; // 👈 1. આપણે બનાવેલું બટન ઈમ્પોર્ટ કરો
 
 const ProductCard = ({ product }) => {
     return (
@@ -21,9 +22,7 @@ const ProductCard = ({ product }) => {
             <p className="text-gray-600">₹{product.price}</p>
 
             {/* Button */}
-            <button className="mt-3 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-                Add to Cart
-            </button>
+            <AddToCartBtn product={product} />
         </div>
     );
 };

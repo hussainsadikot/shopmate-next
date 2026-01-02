@@ -1,34 +1,52 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-// આ આપણું "Store" છે
-const useCartStore = create((set) => ({
+const useCartStore = create(
+    persist(
+        (set) => ({
+            cart: [],
 
-    // શરૂઆતમાં કાર્ટ ખાલી છે
-    cart: [],
+            // 1. ઉમેરવાનું લોજીક (વધારે છે)
+            addToCart: (product) => set((state) => {
+                const existingItem = state.cart.find((item) => item.id === product.id);
+                if (existingItem) {
+                    return {
+                        cart: state.cart.map((item) =>
+                            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                        ),
+                    };
+                } else {
+                    return { cart: [...state.cart, { ...product, quantity: 1 }] };
+                }
+            }),
 
-    // ફંક્શન: કાર્ટમાં વસ્તુ ઉમેરવા માટે
-    addToCart: (product) => set((state) => {
-        // પહેલા ચેક કરો કે આ વસ્તુ ઓલરેડી છે?
-        const existingItem = state.cart.find((item) => item.id === product.id);
+            // 2. ઘટાડવાનું લોજીક (નવું Feature) 👇
+            decreaseQuantity: (productId) => set((state) => {
+                const existingItem = state.cart.find((item) => item.id === productId);
 
-        if (existingItem) {
-            // જો હોય, તો ખાલી quantity વધારો (Quantity + 1)
-            return {
-                cart: state.cart.map((item) =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-                ),
-            };
-        } else {
-            // જો નવી હોય, તો લિસ્ટમાં ઉમેરો (Quantity 1 સાથે)
-            return { cart: [...state.cart, { ...product, quantity: 1 }] };
+                // જો 1 જ હોય અને માઈનસ દબાવે, તો લિસ્ટમાંથી કાઢી નાખો
+                if (existingItem.quantity === 1) {
+                    return { cart: state.cart.filter((item) => item.id !== productId) };
+                }
+                // નહિતર ખાલી કોન્ટીટી ઓછી કરો
+                else {
+                    return {
+                        cart: state.cart.map((item) =>
+                            item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+                        ),
+                    };
+                }
+            }),
+
+            // 3. પૂરું કાઢી નાખવાનું લોજીક
+            removeFromCart: (productId) => set((state) => ({
+                cart: state.cart.filter((item) => item.id !== productId),
+            })),
+        }),
+        {
+            name: 'shopmate-cart',
         }
-    }),
-
-    // ફંક્શન: કાર્ટમાંથી વસ્તુ કાઢવા માટે (પછી કામ લાગશે)
-    removeFromCart: (productId) => set((state) => ({
-        cart: state.cart.filter((item) => item.id !== productId),
-    })),
-
-}));
+    )
+);
 
 export default useCartStore;

@@ -3,15 +3,27 @@
 import useCartStore from "../../store/useCartStore";
 import Link from "next/link";
 import Image from "next/image";
-
+import { useEffect, useState } from "react";
 export default function CartPage() {
     // Store માંથી ડેટા અને ફંક્શન લીધા
-    const { cart, removeFromCart } = useCartStore((state) => ({
-        cart: state.cart,
-        removeFromCart: state.removeFromCart,
-    }));
+    // 1. State to check if loaded
+    const [isClient, setIsClient] = useState(false);
 
-    // કુલ રૂપિયા ગણવાનું લોજીક (Engineering Logic)
+    // 2. Store data
+    const cart = useCartStore((state) => state.cart);
+    const removeFromCart = useCartStore((state) => state.removeFromCart);
+
+    // 3. જ્યારે પેજ લોડ થઈ જાય, ત્યારે જ કહો કે "હવે હું ક્લાયન્ટ છું"
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    // 4. જો હજી લોડ થતું હોય, તો ખાલી લોડિંગ બતાવો (એરરથી બચવા)
+    if (!isClient) {
+        return <div className="p-10 text-center">Loading cart...</div>;
+    }
+
+    // 5. ગણતરી
     const totalAmount = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
     // જો કાર્ટ ખાલી હોય તો...
